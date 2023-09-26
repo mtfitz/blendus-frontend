@@ -3,7 +3,7 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json }
+  | { [key: string]: Json | undefined }
   | Json[]
 
 export interface Database {
@@ -34,10 +34,19 @@ export interface Database {
           username?: string | null
           website?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       projects: {
         Row: {
           author: string
+          blender_version: Database["public"]["Enums"]["blender_version_type"]
           created_at: string | null
           description: string | null
           filename: string | null
@@ -47,6 +56,7 @@ export interface Database {
         }
         Insert: {
           author: string
+          blender_version?: Database["public"]["Enums"]["blender_version_type"]
           created_at?: string | null
           description?: string | null
           filename?: string | null
@@ -56,6 +66,7 @@ export interface Database {
         }
         Update: {
           author?: string
+          blender_version?: Database["public"]["Enums"]["blender_version_type"]
           created_at?: string | null
           description?: string | null
           filename?: string | null
@@ -63,6 +74,14 @@ export interface Database {
           modified_at?: string | null
           name?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "projects_author_fkey"
+            columns: ["author"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
@@ -72,6 +91,9 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
+      blender_version_type: "2.46" | "2.83" | "2.93" | "3.3" | "3.6"
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }

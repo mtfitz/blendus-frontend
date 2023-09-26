@@ -1,0 +1,21 @@
+.project-list-body {
+    padding: 0.5em;
+}
+
+.project-li {
+    align-items: center;
+}
+
+.project-li-header {
+    user-select: none;
+    padding: 0;
+    margin: 0;
+}
+
+.project-li-body {
+    cursor: default;
+}
+
+.nav-tabs {
+    user-select: none;
+}

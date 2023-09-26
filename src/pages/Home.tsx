@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../supabase';
 import { Database } from '../supabase.types';
-import { Collapse, List, UncontrolledCollapse } from 'reactstrap';
+import { Button, Collapse, Input } from 'reactstrap';
+import { ChevronDown } from 'react-bootstrap-icons';
+import CreateProjectModal from '../components/CreateProjectModal';
+import './Home.css';
 
 enum Tabs {
     Projects,
@@ -16,21 +19,22 @@ enum Tabs {
     dateModified: string,
 }*/
 
-interface Job {
+/*interface Job {
     id: string,
     projectName: string,
     dateStarted: string,
     dateFinished?: string,
     progressPercentage: number,
-}
+}*/
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
 export default function Home() {
     const [currentTab, setCurrentTab] = useState<Tabs>(Tabs.Projects);
     const [projects, setProjects] = useState<Project[]>([]);
-    const [jobs, setJobs] = useState<Array<Job>>([]);
-    //const [selectedProject, setSelectedProject] = useState(-1);
+    //const [jobs, setJobs] = useState<Array<Job>>([]);
+    const [currentProject, setCurrentProject] = useState<Number>(-1);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         document.title = "Blendus";
@@ -47,6 +51,11 @@ export default function Home() {
         setProjects(data);
     }
 
+    function selectCurrentProject(i: Number) {
+        if (currentProject === i) setCurrentProject(-1);
+        else setCurrentProject(i);
+    }
+
     /*function handleFocusChange(i: number) {
         if (i === selectedProject) {
             setSelectedProject(-1);
@@ -55,24 +64,53 @@ export default function Home() {
         }
     }*/
 
+    const [projectListSearch, setProjectListSearch] = useState<string>("");
+
     function renderProjects() {
-        const renderedProjects = projects.map((p, i) => (
-            <li key={p['id']} className="list-group-item d-flex" role="button">
-                <div>
-                    {p['name']}
+        const filteredProjects = (projectListSearch === "") ? projects : projects.filter((p) => {
+            const term = projectListSearch;
+            return (p.name?.toLocaleLowerCase().match(term.toLocaleLowerCase()) ?? false)
+                || (p.author?.toLocaleLowerCase().match(term.toLocaleLowerCase()) ?? false)
+                || (p.filename?.toLocaleLowerCase().match(term.toLocaleLowerCase()) ?? false)
+                || (p.description?.toLocaleLowerCase().match(term.toLocaleLowerCase()) ?? false)
+                || (p.id.match(term) ?? false);
+        });
+        const renderedProjects = filteredProjects.map((p, i) => {
+            let isCurrent = (currentProject === i);
+            return (
+            <li id={`project-${i}`} key={p['id']} className="list-group-item project-li" role="button">
+                <div id={`project-${i}-header`} className='d-flex flex-row justify-content-between project-li-header' onClick={() => selectCurrentProject(i)}>
+                    <h6>{p['name']}</h6>
+                    <ChevronDown style={{
+                        transform: isCurrent ? 'scale(1, -1)' : 'inherit'
+                    }}></ChevronDown>
                 </div>
-                <div>
-                    <UncontrolledCollapse toggler={this}>
+                <div id={`project-${i}-body`} className='project-li-body'>
+                    <Collapse isOpen={isCurrent}>
                         {p['description']}
-                    </UncontrolledCollapse>
+                    </Collapse>
                 </div>
             </li>
-        ));
+            );
+        });
 
         return (
-            <ul className="list-group flush">
-                {renderedProjects}
-            </ul>
+            <div>
+            <div className="project-list">
+                <div className="project-list-header d-flex justify-content-between">
+                    <div>
+                        <Input placeholder='Search...' value={projectListSearch} onChange={(e) => setProjectListSearch(e.target.value)}></Input>
+                    </div>
+                    <div>
+                        <Button color="primary" onClick={() => setIsCreateModalOpen(true)}>Create</Button>
+                    </div>
+                </div>
+                <ul className="list-group flush project-list-body">
+                    {renderedProjects}
+                </ul>
+            </div>
+            <CreateProjectModal isOpen={isCreateModalOpen} setIsOpen={setIsCreateModalOpen}></CreateProjectModal>
+            </div>
         );
     }
 

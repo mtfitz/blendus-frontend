@@ -1,6 +1,5 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    Card,
     Button,
     Form,
     FormGroup,
@@ -42,6 +41,7 @@ export default function Login() {
             return;
         }
         
+        console.log(data);
         alert("Magic link sent to: " + email);
     }
 
